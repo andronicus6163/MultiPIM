@@ -1,0 +1,143 @@
+Bootstrap: docker
+From: ubuntu:18.04
+Stage: build
+
+
+# Move the ramulator-pim files in
+# We need to copy the datasets as well from here when they are ready
+%files 
+	./MultiPIM /sim
+
+%environment
+	# Ensure that the definitions are the same as in the %post section
+	export VIMINIT='source /vimrc'
+
+%post
+
+	# Install the environment (keeping it uniform for fastsim and gem5sim)
+	export TZ="America/Chicago"
+	ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+	apt-get -y update && apt-get install -y --no-install-recommends \
+		build-essential \
+		git-core \
+		m4 \
+		scons \
+		automake \
+		autoconf \
+		perl \
+		flex \
+		bison \
+		byacc \
+		vim-tiny \
+		nano-tiny \
+		python3-dev \
+		python3 \
+		python3-pip \
+		python3-ply \
+		libjpeg8-dev \
+		python3-pandas \
+		python3-matplotlib \
+		python3-setuptools \
+		python3-xmltodict \
+		python3-wheel \
+		python3-testtools \
+		python3-blessings \
+		python3-pygments \
+		python3-requests \
+		python3-scipy \
+		libtool-bin \
+		libhdf5-dev \
+		libelf-dev \
+		libboost-all-dev \
+		libxerces-c-dev \
+		libcurl4-gnutls-dev \
+		libicu-dev \
+#		valgrind \
+#		doxygen \
+#		libopenmpi-dev \
+#		automake \
+#		openmpi-bin \
+#		autoconf \
+#		autotools-dev \
+#		curl \
+#		libmpc-dev \
+#		libmpfr-dev \
+#		libgmp-dev \
+#		gawk \
+#		bison \
+#		flex \
+#		texinfo \
+#		gperf \
+#		libtool \
+#		patchutils \
+#		bc \
+#		libexpat-dev \
+#		ninja-build \
+#		git \
+#		libglib2.0-dev
+
+
+	ln -s /usr/include/asm-generic /usr/include/asm
+		
+	# Ubuntu does not have those python3 libraries
+	pip3 install --find-links=. \
+		treelib 
+#		matplotlib-label-lines \
+#		networkx==2.4 \
+#		numpy==1.19.1
+		
+	ln -sv /usr/bin/make /usr/bin/gmake
+
+	cd /sim/
+	sh compile.sh opt
+
+	cd /sim/tests/benchmarks/Polybench
+	./compile.sh
+
+	###################
+	# cleanup
+	###################
+
+	# cleaning up the repositories and deleting the files downloaded by apt-get update
+	apt-get -y clean
+
+
+%help
+    To build container:
+	> singularity build --fakeroot zsim zsim_skeleton.def
+
+    To run the container:
+	> ./zsim [-h] [-v] -b <benchmark> -p <parameters for benchmark as string>
+	
+	or
+
+	> singularity run --containall --bind /my/out/dir/ example.sif
+        	the "--containall" flag prevents interactions with your system
+	        the "--bind /my/out/dir/" mounts a directory in your system
+        	this allows scripts in that directory to be accessed from the image
+	        and results from the image to persist in the directory
+        	It also allows the run script to call .bashrc
+
+    To interactively work with the container:
+	> singularity shell zsim
+
+    To edit files in the container:
+	> singularity build --fakeroot --sandbox zsim sandbox/ (this directory will be created)
+    and to repack the sandbox
+	> singularity build --fakeroot sandbox/ zsim 
+	
+   
+    UPDOWN REPOSITORIES
+    ===================
+	> git clone --depth 1 -b master git@bitbucket.org:achien7242/udweave.git udweave.vanilla
+	> git clone --depth 1 -b develop git@bitbucket.org:achien7242/updown.git updown.vanilla
+	> git clone --depth 1 -b develop git@bitbucket.org:achien7242/udgem5sim.git udgem5sim.vanilla
+	> cd udgem5sim.vanilla
+	> git submodule init; git submodule update
+	> cd ext/updown
+	> git switch develop
+	> cd ../..
+	> rm -Rf utils/m5/build
+	
+%labels
+	Author LSSG University of Chicago
