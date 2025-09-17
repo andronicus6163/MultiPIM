@@ -93,6 +93,9 @@ Stage: build
 
 	cd /sim/tests/benchmarks/Polybench
 	./compile.sh
+	
+	cd /sim/tests/benchmarks/MemPar
+	./compile.sh
 
 	###################
 	# cleanup

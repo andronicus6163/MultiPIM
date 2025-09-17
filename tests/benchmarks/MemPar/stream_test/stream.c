@@ -46,6 +46,9 @@
 # include <float.h>
 # include <limits.h>
 # include <sys/time.h>
+#ifdef _OPENMP
+# include <omp.h>
+#endif
 
 /*-----------------------------------------------------------------------
  * INSTRUCTIONS:
@@ -310,9 +313,15 @@ main()
 #ifdef TUNED
         tuned_STREAM_Copy();
 #else
+zsim_roi_begin();
+#pragma scop
+pim_mp_begin();
 #pragma omp parallel for
 	for (j=0; j<STREAM_ARRAY_SIZE; j++)
 	    c[j] = a[j];
+pim_mp_end();
+#pragma endscop
+zsim_roi_end();
 #endif
 	times[0][k] = mysecond() - times[0][k];
 	

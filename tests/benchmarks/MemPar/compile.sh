@@ -1,0 +1,1 @@
+perl compile-all.pl ./
