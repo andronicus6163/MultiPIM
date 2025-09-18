@@ -1,1 +1,1 @@
-perl compile-all.pl ./
+perl utilities/compile-all.pl ./

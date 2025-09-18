@@ -1,23 +1,28 @@
+UTIL_DIR = ../utilities
 CC = gcc
-CFLAGS = -O2
+CFLAGS = -O2 -fopenmp
+INCPATHS = -I$(UTIL_DIR)
+EXE = stream
+SRC = stream.c
 
 FF = gfortran
 FFLAGS = -O2
+SRC += $(UTIL_DIR)/polybench.c
 
-#all: stream_f.exe stream_c.exe
-all: stream_c.exe
+DEPS        := Makefile.dep
+DEP_FLAG    := -MM
+all : exe
 
-#stream_f.exe: stream.f mysecond.o
-#	$(CC) $(CFLAGS) -c mysecond.c
-#	$(FF) $(FFLAGS) -c stream.f
-#	$(FF) $(FFLAGS) stream.o mysecond.o -o stream_f.exe
-#
-stream_c.exe: stream.c
-	$(CC) $(CFLAGS) stream.c -o stream_c.exe
+exe : $(EXE)
+
+
+$(EXE) : $(SRC)
+        $(CC) $(CFLAGS) $(INCPATHS) $^ -o $@ $(EXTRA_FLAGS)
+
+$(DEPS): $(SRC) $(HEADERS)
+        $(CC) $(INCPATHS) $(DEP_FLAG) $(SRC) > $(DEPS)
+
+-include $(DEPS)
 
 clean:
-	rm -f stream_f.exe stream_c.exe *.o
-
-# an example of a more complex build line for the Intel icc compiler
-stream.icc: stream.c
-	icc -O3 -xCORE-AVX2 -ffreestanding -qopenmp -DSTREAM_ARRAY_SIZE=80000000 -DNTIMES=20 stream.c -o stream.omp.AVX2.80M.20x.icc
+        rm -f stream

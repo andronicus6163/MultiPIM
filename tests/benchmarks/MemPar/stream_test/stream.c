@@ -46,6 +46,8 @@
 # include <float.h>
 # include <limits.h>
 # include <sys/time.h>
+#include <polybench.h>
+//# include "../../../zsim_hook.h"
 #ifdef _OPENMP
 # include <omp.h>
 #endif
